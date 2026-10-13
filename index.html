@@ -19,6 +19,12 @@
 </style>
 </head>
 <body>
+  <script>
+window.onerror = function (msg) {
+  document.body.insertAdjacentHTML('afterbegin',
+    '<p style="color:red;font-size:18px">โค้ดผิดพลาด: ' + msg + '</p>');
+};
+</script>
 <div id="formPage" class="hide">
   <div>ประเภท</div><div class="grid" id="types"></div>
   <div>ตู้</div><div class="grid" id="machines"></div>
@@ -117,20 +123,28 @@ async function loadSummary() {
 }
 
 (async () => {
-  await liff.init({ liffId: LIFF_ID });
-  if (!liff.isLoggedIn()) return liff.login();
-  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Bangkok' }); // YYYY-MM-DD
-  $('date').value = today;
-  $('month').value = today.slice(0, 7);
-  const p = new URLSearchParams(location.search);
-  if (p.get('page') === 'summary') {
-    $('summaryPage').classList.remove('hide');
-    $('month').onchange = loadSummary;
-    loadSummary();
-  } else {
-    if (p.get('type') === 'out') { st.type = 'จ่าย'; st.category = CATS['จ่าย'][0]; }
-    $('formPage').classList.remove('hide');
-    render();
+  try {
+    if (LIFF_ID.includes('ใส่')) throw new Error('ยังไม่ได้ใส่ LIFF_ID ในโค้ด');
+    if (API_URL.includes('ใส่')) throw new Error('ยังไม่ได้ใส่ API_URL ในโค้ด');
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) return liff.login();
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Bangkok' });
+    $('date').value = today;
+    $('month').value = today.slice(0, 7);
+    const p = new URLSearchParams(location.search);
+    if (p.get('page') === 'summary') {
+      $('summaryPage').classList.remove('hide');
+      $('month').onchange = loadSummary;
+      loadSummary();
+    } else {
+      if (p.get('type') === 'out') { st.type = 'จ่าย'; st.category = CATS['จ่าย'][0]; }
+      $('formPage').classList.remove('hide');
+      render();
+    }
+  } catch (e) {
+    document.body.innerHTML =
+      '<div style="padding:20px;font-size:20px;color:red">เปิดไม่สำเร็จ<br>' +
+      (e.message || e) + '</div>';
   }
 })();
 </script>
