@@ -48,7 +48,7 @@ window.onerror = function (msg) {
   <div class="label">จำนวนเงิน (บาท)</div><input id="amount" type="number" inputmode="decimal">
   <div id="litersBox" class="hide"><div class="label">จำนวนลิตร (ไม่ใส่ก็ได้)</div><input id="liters" type="number" inputmode="decimal"></div>
   <div class="label">วันที่</div><input id="date" type="date">
-  <div class="label">หมายเหตุ (ไม่ใส่ก็ได้)</div><input id="note" placeholder="เช่น ค่าไฟ, ค่าเช่าห้อง 2">
+  <div class="label">หมายเหตุ (ไม่ใส่ก็ได้)</div><input id="note" placeholder="เช่น ค่าไฟ, ค่าเช่าห้อง">
   <button class="save" id="saveBtn">บันทึก</button>
 </div>
 
@@ -61,7 +61,7 @@ window.onerror = function (msg) {
 <script>
 const LIFF_ID = '2011999457-wLrRoiw5';
 const API_URL = 'https://script.google.com/macros/s/AKfycbyQ2Bq4U6HiBsPE8blnMhmfPP720MoX_WTcMZ8of6TJz0c_ncqqjv_U8QMyt8L9RvcG/exec';
-const BUSINESSES = ['ตู้น้ำมัน', 'ตู้ล้างรถ', 'บ้านเช่า'];
+const BUSINESSES = ['ตู้น้ำมัน', 'ตู้ล้างรถ', 'บ้านเช่า','ตู้ซักผ้า'];
 const TH_MONTHS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const st = { type: 'รับ', business: '' };
 const $ = id => document.getElementById(id);
