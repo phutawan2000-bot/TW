@@ -7,32 +7,34 @@
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
   body{font-family:sans-serif;font-size:20px;margin:0;padding:16px;background:#f5f5f5}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 18px}
-  .btn{padding:16px;font-size:20px;border:2px solid #ccc;border-radius:12px;background:#fff}
+  .label{margin-top:4px;font-weight:bold}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 18px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:6px 0 18px}
+  .btn{padding:18px 6px;font-size:20px;border:2px solid #ccc;border-radius:12px;background:#fff}
   .btn.on{border-color:#06c755;background:#e6f9ee;font-weight:bold}
   input{width:100%;box-sizing:border-box;padding:14px;font-size:22px;border:1px solid #ccc;border-radius:10px;margin:6px 0 18px}
-  .save{width:100%;padding:20px;font-size:24px;background:#06c755;color:#fff;border:none;border-radius:12px}
+  .save{width:100%;padding:20px;font-size:24px;color:#fff;border:none;border-radius:12px}
   .hide{display:none}
-  table{width:100%;border-collapse:collapse;background:#fff}
+  table{width:100%;border-collapse:collapse;background:#fff;font-size:18px}
   td,th{border:1px solid #ddd;padding:8px;text-align:right}
   td:first-child,th:first-child{text-align:left}
 </style>
 </head>
 <body>
-  <script>
+<script>
 window.onerror = function (msg) {
   document.body.insertAdjacentHTML('afterbegin',
     '<p style="color:red;font-size:18px">โค้ดผิดพลาด: ' + msg + '</p>');
 };
 </script>
+
 <div id="formPage" class="hide">
-  <div>ประเภท</div><div class="grid" id="types"></div>
-  <div>ตู้</div><div class="grid" id="machines"></div>
-  <div>หมวด</div><div class="grid" id="cats"></div>
-  <div>จำนวนเงิน (บาท)</div><input id="amount" type="number" inputmode="decimal">
-  <div id="litersBox" class="hide">จำนวนลิตร<input id="liters" type="number" inputmode="decimal"></div>
-  <div>วันที่</div><input id="date" type="date">
-  <div>หมายเหตุ (ไม่ใส่ก็ได้)</div><input id="note">
+  <div class="label">ประเภท</div><div class="grid2" id="types"></div>
+  <div class="label">กิจการ</div><div class="grid3" id="biz"></div>
+  <div class="label">จำนวนเงิน (บาท)</div><input id="amount" type="number" inputmode="decimal">
+  <div id="litersBox" class="hide"><div class="label">จำนวนลิตร (ไม่ใส่ก็ได้)</div><input id="liters" type="number" inputmode="decimal"></div>
+  <div class="label">วันที่</div><input id="date" type="date">
+  <div class="label">หมายเหตุ (ไม่ใส่ก็ได้)</div><input id="note" placeholder="เช่น ค่าไฟ, ค่าเช่าห้อง 2">
   <button class="save" id="saveBtn">บันทึก</button>
 </div>
 
@@ -45,35 +47,33 @@ window.onerror = function (msg) {
 <script>
 const LIFF_ID = '2011999457-wLrRoiw5';
 const API_URL = 'https://script.google.com/macros/s/AKfycbyQ2Bq4U6HiBsPE8blnMhmfPP720MoX_WTcMZ8of6TJz0c_ncqqjv_U8QMyt8L9RvcG/exec';
-const MACHINES = ['ตู้น้ำมัน 95','ตู้น้ำมัน disel','ตู้น้ำมัน 95 home','ล้างรถ'];
-const CATS = {
-  'รับ': ['เก็บเงินตู้น้ำมัน', 'เก็บเงินตู้ล้างรถ', 'อื่นๆ'],
-  'จ่าย': ['ซื้อน้ำมัน','ค่าไฟ','ค่าน้ำ','น้ำยา/แว็กซ์','ซ่อมบำรุง','อื่นๆ']
-};
-const st = { type: 'รับ', machine: '', category: 'เก็บเงินตู้' };
+const BUSINESSES = ['ตู้น้ำมัน', 'ตู้ล้างรถ', 'บ้านเช่า'];
+const st = { type: 'รับ', business: '' };
 const $ = id => document.getElementById(id);
 const fmt = n => Number(n).toLocaleString('th-TH');
 
-function buttons(el, items, key, onPick) {
+function buttons(el, items, key) {
   el.innerHTML = '';
   items.forEach(v => {
     const b = document.createElement('button');
     b.className = 'btn' + (st[key] === v ? ' on' : '');
     b.textContent = v;
-    b.onclick = () => { st[key] = v; onPick && onPick(); render(); };
+    b.onclick = () => { st[key] = v; render(); };
     el.appendChild(b);
   });
 }
 
 function render() {
-  buttons($('types'), ['รับ','จ่าย'], 'type', () => { st.category = CATS[st.type][0]; });
-  buttons($('machines'), MACHINES, 'machine');
-  buttons($('cats'), CATS[st.type], 'category');
-  $('litersBox').classList.toggle('hide', st.category !== 'ซื้อน้ำมัน');
+  buttons($('types'), ['รับ', 'จ่าย'], 'type');
+  buttons($('biz'), BUSINESSES, 'business');
+  const showLiters = st.type === 'จ่าย' && st.business === 'ตู้น้ำมัน';
+  $('litersBox').classList.toggle('hide', !showLiters);
+  if (!showLiters) $('liters').value = '';
+  $('saveBtn').style.background = st.type === 'รับ' ? '#06c755' : '#ff7a00';
+  $('saveBtn').textContent = st.type === 'รับ' ? 'บันทึกรายรับ' : 'บันทึกรายจ่าย';
 }
 
 async function api(payload) {
-  // ใช้ text/plain เพื่อเลี่ยง CORS preflight ซึ่ง Apps Script ไม่รองรับ
   const res = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -86,15 +86,17 @@ async function api(payload) {
 
 $('saveBtn').onclick = async () => {
   const amount = Number($('amount').value);
-  if (!st.machine) return alert('กรุณาเลือกตู้');
+  if (!st.business) return alert('กรุณาเลือกกิจการ');
   if (!(amount > 0)) return alert('กรุณาใส่จำนวนเงิน');
-  if (!confirm(`${st.type} ${fmt(amount)} บาท\n${st.machine} - ${st.category}\nถูกต้องไหม?`)) return;
+  const label = st.type === 'รับ' ? 'รายรับ' : 'รายจ่าย';
+  if (!confirm(`${label} ${st.business}\n${fmt(amount)} บาท\nถูกต้องไหม?`)) return;
+  const btnText = $('saveBtn').textContent;
   $('saveBtn').disabled = true;
   $('saveBtn').textContent = 'กำลังบันทึก...';
   try {
     await api({ action: 'add', data: {
-      date: $('date').value, type: st.type, machine: st.machine,
-      category: st.category, amount, liters: $('liters').value, note: $('note').value
+      date: $('date').value, type: st.type, business: st.business,
+      amount, liters: $('liters').value, note: $('note').value
     }});
     alert('บันทึกเรียบร้อย ✅');
     $('amount').value = ''; $('liters').value = ''; $('note').value = '';
@@ -102,7 +104,7 @@ $('saveBtn').onclick = async () => {
     alert('บันทึกไม่สำเร็จ: ' + e.message);
   }
   $('saveBtn').disabled = false;
-  $('saveBtn').textContent = 'บันทึก';
+  $('saveBtn').textContent = btnText;
 };
 
 async function loadSummary() {
@@ -112,9 +114,9 @@ async function loadSummary() {
     let h = `<p>รายรับ <b>${fmt(s.income)}</b> บาท<br>
              รายจ่าย <b>${fmt(s.expense)}</b> บาท<br>
              กำไร <b style="color:${s.profit >= 0 ? 'green' : 'red'}">${fmt(s.profit)}</b> บาท</p>
-             <table><tr><th>ตู้</th><th>รับ</th><th>จ่าย</th><th>กำไร</th></tr>`;
-    for (const [m, v] of Object.entries(s.byMachine))
-      h += `<tr><td>${m}</td><td>${fmt(v.income)}</td><td>${fmt(v.expense)}</td><td>${fmt(v.income - v.expense)}</td></tr>`;
+             <table><tr><th>กิจการ</th><th>รับ</th><th>จ่าย</th><th>กำไร</th></tr>`;
+    for (const [b, v] of Object.entries(s.byBusiness))
+      h += `<tr><td>${b}</td><td>${fmt(v.income)}</td><td>${fmt(v.expense)}</td><td>${fmt(v.income - v.expense)}</td></tr>`;
     $('result').innerHTML = h + '</table>';
   } catch (e) {
     $('result').textContent = 'โหลดไม่สำเร็จ: ' + e.message;
@@ -136,7 +138,7 @@ async function loadSummary() {
       $('month').onchange = loadSummary;
       loadSummary();
     } else {
-      if (p.get('type') === 'out') { st.type = 'จ่าย'; st.category = CATS['จ่าย'][0]; }
+      if (p.get('type') === 'out') st.type = 'จ่าย';
       $('formPage').classList.remove('hide');
       render();
     }
