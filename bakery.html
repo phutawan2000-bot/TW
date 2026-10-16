@@ -99,18 +99,13 @@ const monthLabel = ym => {
   const [y, m] = ym.split('-').map(Number);
   return TH_MONTHS[m - 1] + ' ' + String(y + 543).slice(2);
 };
+  
 function buttons(el, items, key, cls) {
   el.innerHTML = '';
   items.forEach(it => {
     const [v, label] = Array.isArray(it) ? it : [it, it];
     const b = document.createElement('button');
-    // เช็กสถานะให้ตรงกันเป๊ะ และกำหนดคลาสพื้นฐานให้ถูกว่าเป้นปุ่มปกติหรือชิป
-    const isOn = String(st[key]) === String(v);
-    if (cls === 'chip') {
-      b.className = 'chip' + (isOn ? ' on' : '');
-    } else {
-      b.className = (cls || 'btn') + (isOn ? ' on' : '');
-    }
+    b.className = (cls || 'btn') + (st[key] === v ? ' on' : '');
     b.textContent = label;
     b.onclick = () => { st[key] = v; render(); };
     el.appendChild(b);
