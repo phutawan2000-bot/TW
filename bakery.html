@@ -54,7 +54,7 @@ window.onerror = function (msg) {
     <div class="list" id="products"></div>
     <div class="field">
       <div class="label">รายละเอียดเพิ่มเติม (ไม่ใส่ก็ได้)</div>
-      <input id="sellDetail" placeholder="เช่น ฝากขายร้านพี่มิว หรือ ลูกค้าสั่งพิเศษ">
+      <input id="sellDetail" placeholder="เช่น ฝากขายร้านน้องอุ้ม">
     </div>
   </div>
 
@@ -105,7 +105,7 @@ function buttons(el, items, key, cls) {
   items.forEach(it => {
     const [v, label] = Array.isArray(it) ? it : [it, it];
     const b = document.createElement('button');
-    b.className = (cls || 'btn') + (st[key] === v ? ' on' : '');
+    b.className = (cls || 'btn') + (String(st[key]) === String(v) ? ' on' : '');
     b.textContent = label;
     b.onclick = () => { st[key] = v; render(); };
     el.appendChild(b);
