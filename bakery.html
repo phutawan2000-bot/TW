@@ -15,7 +15,6 @@
   .btn.on{border-color:#f08c00;background:#fff1db;font-weight:bold}
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
   .chip{padding:8px 14px;font-size:16px;border:1px solid #ddd;border-radius:20px;background:#fff;color:#333}
-  .chip.on{border-color:#f08c00;background:#fff1db;font-weight:bold}
   input{width:100%;box-sizing:border-box;padding:13px;font-size:20px;border:1px solid #ccc;border-radius:10px;margin-top:6px}
   .save{width:100%;padding:18px;font-size:22px;color:#fff;border:none;border-radius:12px;margin-top:4px}
   .hide{display:none}
@@ -36,7 +35,6 @@
   .rec{background:#fff;border-radius:12px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px}
   .rec small{color:#777;font-size:15px}
   .del{padding:10px 16px;font-size:17px;border:1px solid #e53935;color:#e53935;background:#fff;border-radius:10px}
-  .muted{color:#999;font-size:14px;margin-top:24px}
 </style>
 </head>
 <body>
@@ -54,7 +52,6 @@ window.onerror = function (msg) {
   <div id="sellBox">
     <div class="label">ขนม</div>
     <div class="list" id="products"></div>
-    </div>
   </div>
 
   <div id="buyBox" class="hide">
@@ -99,7 +96,6 @@ const monthLabel = ym => {
   return TH_MONTHS[m - 1] + ' ' + String(y + 543).slice(2);
 };
 
-// ---------- ฟอร์มบันทึก ----------
 function buttons(el, items, key, cls) {
   el.innerHTML = '';
   items.forEach(it => {
@@ -148,9 +144,8 @@ async function api(payload) {
 async function loadOptions() {
   try {
     const o = await api({ action: 'options' });
-    chips($('customerChips'), o.customers, 'customer');
     chips($('itemChips'), [...new Set([...o.items, ...DEFAULT_ITEMS])].slice(0, 10), 'item');
-  } catch (e) { /* โหลดไม่ได้ก็ใช้ปุ่มเริ่มต้นไปก่อน */ }
+  } catch (e) {}
 }
 
 $('saveBtn').onclick = async () => {
@@ -161,6 +156,7 @@ $('saveBtn').onclick = async () => {
   if (sell && !st.product) return alert('กรุณาเลือกขนม');
   if (!sell && !item) return alert('กรุณาใส่รายการที่ซื้อ');
   if (!(amount > 0)) return alert('กรุณาใส่จำนวนเงิน');
+  const what = sell ? st.product : item;
   const qtyText = Number(qty) > 0 ? qty + ' ' + st.unit + '\n' : '';
   if (!confirm(`${sell ? 'รายรับ' : 'รายจ่าย'}: ${what}\n${qtyText}${fmt(amount)} บาท\nถูกต้องไหม?`)) return;
 
@@ -182,13 +178,12 @@ $('saveBtn').onclick = async () => {
   $('saveBtn').textContent = btnText;
 };
 
-// ---------- หน้าสรุป ----------
 async function loadSummary() {
   $('result').textContent = 'กำลังโหลด...';
   try {
     const s = await api({ action: 'summary', month: $('month').value });
-    $('result').innerHTML = totalsHtml(s) + productsHtml(s.products) + recordsHtml(s.records) + historyHtml(s.history)
-      + `<div class="muted">รหัสผู้ใช้ของคุณ (ใช้ตอนล็อกสิทธิ์)<input readonly value="${esc(s.you)}" onclick="this.select()"></div>`;
+    $('result').innerHTML = totalsHtml(s) + productsHtml(s.products)
+      + recordsHtml(s.records) + historyHtml(s.history);
     document.querySelectorAll('.del').forEach(b =>
       b.onclick = () => delRecord(b.dataset.row, b.dataset.key, b.dataset.info));
   } catch (e) {
@@ -261,7 +256,6 @@ async function delRecord(row, key, info) {
   }
 }
 
-// ---------- เริ่มต้น ----------
 (async () => {
   try {
     if (LIFF_ID.includes('ใส่')) throw new Error('ยังไม่ได้ใส่ LIFF_ID ในโค้ด');
@@ -279,7 +273,6 @@ async function delRecord(row, key, info) {
     } else {
       if (p.get('type') === 'out') st.type = 'จ่าย';
       $('formPage').classList.remove('hide');
-      chips($('itemChips'), DEFAULT_ITEMS, 'item');
       render();
       loadOptions();
     }
