@@ -54,10 +54,6 @@ window.onerror = function (msg) {
   <div id="sellBox">
     <div class="label">ขนม</div>
     <div class="list" id="products"></div>
-    <div class="field">
-      <div class="label">ขายให้ / ฝากขายที่ (ไม่ใส่ก็ได้)</div>
-      <input id="customer" placeholder="เช่น น้องอุ้ม">
-      <div class="chips" id="customerChips"></div>
     </div>
   </div>
 
@@ -161,12 +157,10 @@ $('saveBtn').onclick = async () => {
   const sell = st.type === 'รับ';
   const amount = Number($('amount').value);
   const item = $('item').value.trim();
-  const customer = $('customer').value.trim();
   const qty = $('qty').value;
   if (sell && !st.product) return alert('กรุณาเลือกขนม');
   if (!sell && !item) return alert('กรุณาใส่รายการที่ซื้อ');
   if (!(amount > 0)) return alert('กรุณาใส่จำนวนเงิน');
-  const what = sell ? st.product + (customer ? ' - ' + customer : '') : item;
   const qtyText = Number(qty) > 0 ? qty + ' ' + st.unit + '\n' : '';
   if (!confirm(`${sell ? 'รายรับ' : 'รายจ่าย'}: ${what}\n${qtyText}${fmt(amount)} บาท\nถูกต้องไหม?`)) return;
 
@@ -175,11 +169,11 @@ $('saveBtn').onclick = async () => {
   $('saveBtn').textContent = 'กำลังบันทึก...';
   try {
     await api({ action: 'add', data: {
-      type: st.type, date: $('date').value, product: st.product, customer, item,
+      type: st.type, date: $('date').value, product: st.product, item,
       qty, unit: st.unit, amount, note: $('note').value
     }});
     alert('บันทึกเรียบร้อย ✅');
-    ['amount', 'qty', 'note', 'customer', 'item'].forEach(id => $(id).value = '');
+    ['amount', 'qty', 'note', 'item'].forEach(id => $(id).value = '');
     loadOptions();
   } catch (e) {
     alert('บันทึกไม่สำเร็จ: ' + e.message);
@@ -193,8 +187,7 @@ async function loadSummary() {
   $('result').textContent = 'กำลังโหลด...';
   try {
     const s = await api({ action: 'summary', month: $('month').value });
-    $('result').innerHTML = totalsHtml(s) + productsHtml(s.products) + customersHtml(s.customers)
-      + recordsHtml(s.records) + historyHtml(s.history)
+    $('result').innerHTML = totalsHtml(s) + productsHtml(s.products) + recordsHtml(s.records) + historyHtml(s.history)
       + `<div class="muted">รหัสผู้ใช้ของคุณ (ใช้ตอนล็อกสิทธิ์)<input readonly value="${esc(s.you)}" onclick="this.select()"></div>`;
     document.querySelectorAll('.del').forEach(b =>
       b.onclick = () => delRecord(b.dataset.row, b.dataset.key, b.dataset.info));
