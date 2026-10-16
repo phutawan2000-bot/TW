@@ -52,6 +52,10 @@ window.onerror = function (msg) {
   <div id="sellBox">
     <div class="label">ขนม</div>
     <div class="list" id="products"></div>
+    <div class="field">
+      <div class="label">รายละเอียดเพิ่มเติม (ไม่ใส่ก็ได้)</div>
+      <input id="sellDetail" placeholder="เช่น ฝากขายร้านพี่มิว หรือ ลูกค้าสั่งพิเศษ">
+    </div>
   </div>
 
   <div id="buyBox" class="hide">
@@ -152,11 +156,14 @@ $('saveBtn').onclick = async () => {
   const sell = st.type === 'รับ';
   const amount = Number($('amount').value);
   const item = $('item').value.trim();
+  const sellDetail = $('sellDetail').value.trim();
   const qty = $('qty').value;
   if (sell && !st.product) return alert('กรุณาเลือกขนม');
   if (!sell && !item) return alert('กรุณาใส่รายการที่ซื้อ');
   if (!(amount > 0)) return alert('กรุณาใส่จำนวนเงิน');
-  const what = sell ? st.product : item;
+  
+  // ถ้าเป็นรายรับ จะเอาชื่อขนม + รายละเอียด (ถ้ามี) ไปใส่ช่อง Description
+  const what = sell ? (sellDetail ? st.product + ' - ' + sellDetail : st.product) : item;
   const qtyText = Number(qty) > 0 ? qty + ' ' + st.unit + '\n' : '';
   if (!confirm(`${sell ? 'รายรับ' : 'รายจ่าย'}: ${what}\n${qtyText}${fmt(amount)} บาท\nถูกต้องไหม?`)) return;
 
@@ -165,11 +172,11 @@ $('saveBtn').onclick = async () => {
   $('saveBtn').textContent = 'กำลังบันทึก...';
   try {
     await api({ action: 'add', data: {
-      type: st.type, date: $('date').value, product: st.product, item,
+      type: st.type, date: $('date').value, product: st.product, item, sellDetail,
       qty, unit: st.unit, amount, note: $('note').value
     }});
     alert('บันทึกเรียบร้อย ✅');
-    ['amount', 'qty', 'note', 'item'].forEach(id => $(id).value = '');
+    ['amount', 'qty', 'note', 'item', 'sellDetail'].forEach(id => $(id).value = '');
     loadOptions();
   } catch (e) {
     alert('บันทึกไม่สำเร็จ: ' + e.message);
